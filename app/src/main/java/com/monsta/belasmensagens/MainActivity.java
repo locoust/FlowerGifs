@@ -8,26 +8,21 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.monsta.listeners.Bto_Left_Listener;
+import com.monsta.listeners.Bto_Right_Listener;
+import com.monsta.listeners.Save_Image_Listener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,20 +34,23 @@ import java.io.InputStream;
  */
 public class MainActivity extends Activity
 {
-    final int  MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE = 1;
-    final int MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE_2 =2;
+    final int  MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE   = 1;
+    final int  MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE_2 = 2;
 
     public static int NUM_IMAGES=39;
 
-    private ImageButton bto_left;
-    private ImageButton bto_save;
     private ImageButton bto_share;
-    private ImageButton bto_right;
     private ImageView image;
     private int cont;
     private Bitmap bitmap;
     InterstitialAd mInterstitialAd;
     private InterstitialAd interstitial;
+    private Bto_Left_Listener btoLeft;
+    private Bto_Right_Listener btoRight;
+    private SaveImage save;
+    private Save_Image_Listener btoSave;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -60,7 +58,7 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AdRequest adRequest = new AdRequest.Builder().build();
+        /*AdRequest adRequest = new AdRequest.Builder().build();
 
             // Prepare the Interstitial Ad
             interstitial = new InterstitialAd(MainActivity.this);
@@ -74,13 +72,10 @@ public class MainActivity extends Activity
             // Call displayInterstitial() function
                     displayInterstitial();
             }
-        });
+        });*/
 
-
-        bto_left = (ImageButton)findViewById(R.id.left);
-        bto_save = (ImageButton)findViewById(R.id.save);
+        //bto_save = (ImageButton)findViewById(R.id.save);
         bto_share = (ImageButton)findViewById(R.id.share);
-        bto_right = (ImageButton)findViewById(R.id.right);
         image = (ImageView)findViewById(R.id.image);
 
         TextView cabezera =(TextView)findViewById(R.id.cabezera);
@@ -92,19 +87,24 @@ public class MainActivity extends Activity
         LoagImage(cont);
 
         LoadListeners();
+
+        save = new SaveImage(this);
+        btoLeft = new Bto_Left_Listener(this);
+        btoRight = new Bto_Right_Listener(this);
+        btoSave = new Save_Image_Listener(this);
+
     }
-    public void displayInterstitial()
+    /*public void displayInterstitial()
     {
         // If Ads are loaded, show Interstitial else show nothing.
         if (interstitial.isLoaded()) {
             interstitial.show();
         }
-    }
+    }*/
     private void LoadListeners()
     {
-        Right();
-        Left();
-        SaveImageListener();
+
+        //SaveImageListener();
         ShareImageListener();
     }
     private void ShareImageListener()
@@ -140,7 +140,7 @@ public class MainActivity extends Activity
             case MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE_2:
                 if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
 
-                    SaveNoKitKatVersion();
+                    save.SaveNoKitKatVersion();
                 }
 
             default:
@@ -177,7 +177,7 @@ public class MainActivity extends Activity
         }
 
     }
-    private void SaveImageListener()
+    /*private void SaveImageListener()
     {
         bto_save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,61 +187,8 @@ public class MainActivity extends Activity
             }
         });
 
-    }
-    private void Right()
-    {
-        bto_right.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (cont < NUM_IMAGES) {
-                    cont++;
-                } else {
-                    cont = 0;
-                }
-
-                if (cont % 20 == 0|| cont%30==0) {
-
-                    AdRequest adRequest = new AdRequest.Builder().build();
-
-                    // Prepare the Interstitial Ad
-                    interstitial = new InterstitialAd(MainActivity.this);
-                    // Insert the Ad Unit ID
-                    interstitial.setAdUnitId(getString(R.string.admob_interstitial_id));
-
-                    interstitial.loadAd(adRequest);
-                    // Prepare an Interstitial Ad Listener
-                    interstitial.setAdListener(new AdListener() {
-                        public void onAdLoaded() {
-                            // Call displayInterstitial() function
-                            displayInterstitial();
-                        }
-                    });
-
-                }
-
-                LoagImage(cont);
-            }
-        });
-    }
-    private void Left()
-    {
-        bto_left.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (cont > 0) {
-                    cont--;
-                } else {
-                    cont = NUM_IMAGES;
-                }
-
-                LoagImage(cont);
-            }
-        });
-
-    }
-    private void SaveImage()
+    }*/
+    /*private void SaveImage()
     {
         if (android.os.Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT)
         {
@@ -273,16 +220,16 @@ public class MainActivity extends Activity
             }
         }
 
-    }
-    private void SaveNoKitKatVersion()
+    }*/
+    /*private void SaveNoKitKatVersion()
     {
         try {
-            saveImageToExternal(getResources().getString(R.string.cabecera)+" "+cont+".jpg",bitmap);
+            saveImageToExternal(getResources().getString(R.string.cabecera) + " " + cont + ".jpg", bitmap);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    public void saveImageToExternal(String imgName, Bitmap bm) throws IOException {
+    }*/
+    /*public void saveImageToExternal(String imgName, Bitmap bm) throws IOException {
 
         Toast.makeText(MainActivity.this, "Salvar a imagem para a sua galeria", Toast.LENGTH_LONG).show();
         //Create Path to save Image
@@ -308,10 +255,10 @@ public class MainActivity extends Activity
         } catch(Exception e) {
             throw new IOException();
         }
-    }
-    private void LoagImage(int cont)
+    }*/
+    public void LoagImage(int cont)
     {
-        Bitmap bm = getBitmapFromAssets(cont+".jpg");
+        Bitmap bm = getBitmapFromAssets(cont + ".jpg");
         image.setImageBitmap(bm);
     }
     public Bitmap getBitmapFromAssets(String fileName)
@@ -332,5 +279,47 @@ public class MainActivity extends Activity
     public void onBackPressed() {
 
         super.onBackPressed();
+    }
+    public ImageButton getBto_share() {
+        return bto_share;
+    }
+
+    public int getCont() {
+        return cont;
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public InterstitialAd getInterstitial() {
+        return interstitial;
+    }
+
+    public static int getNumImages() {
+        return NUM_IMAGES;
+    }
+
+    public void setCont(int cont) {
+        this.cont = cont;
+    }
+
+    public int getMY_PERMISSIONS_WRITE_EXTERNAL_STORAGE_2() {
+        return MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE_2;
+    }
+
+    public int getMY_PERMISSIONS_WRITE_EXTERNAL_STORAGE() {
+        return MY_PERMISSIONS_WRITE_EXTERNAL_STORAGE;
+    }
+
+    public ImageView getImage() {
+        return image;
+    }
+
+    public InterstitialAd getmInterstitialAd() {
+        return mInterstitialAd;
+    }
+    public SaveImage getSave() {
+        return save;
     }
 }
